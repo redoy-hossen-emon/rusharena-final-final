@@ -13,7 +13,7 @@ export async function initPush() {
     console.log("DEVICE TOKEN:", token.value);
 
     // Save to your database
-    fetch(`/api/save-token`, {
+    fetch(`${process.env.WEB_URL}api/save-token`, {
       method: "POST",
       body: JSON.stringify({ token: token.value }),
     });
