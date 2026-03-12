@@ -13,12 +13,20 @@ import {
   MatchType4,
   MatchType5,
   MatchType6,
+  MatchType7,
+  MatchType8,
+  MatchType9,
+  MatchType10,
   MatchType1Img,
   MatchType2Img,
   MatchType3Img,
   MatchType4Img,
   MatchType5Img,
   MatchType6Img,
+  MatchType7Img,
+  MatchType8Img,
+  MatchType9Img,
+  MatchType10Img,
 } from "@/config";
 import PrizePopup from "./prizePopup";
 import { Preferences } from "@capacitor/preferences";
@@ -41,6 +49,14 @@ const getMatchImage = (matchType) => {
       return MatchType5Img;
     case MatchType6:
       return MatchType6Img;
+    case MatchType7:
+      return MatchType7Img;
+    case MatchType8:
+      return MatchType8Img;
+    case MatchType9:
+      return MatchType9Img;
+    case MatchType10:
+      return MatchType10Img;
     default:
       return "/images/logo.jpg";
   }
