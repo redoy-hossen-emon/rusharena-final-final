@@ -5,6 +5,7 @@ import axios from "axios";
 import { showToast } from "@/app/component/application/tostify";
 import { useSearchParams } from "next/navigation";
 import MatchRule from "@/app/component/application/matchRule";
+import { Preferences } from "@capacitor/preferences";
 
 export default function MatchDetails() {
   const searchParams = useSearchParams();
