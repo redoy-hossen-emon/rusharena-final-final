@@ -266,22 +266,23 @@ export default function MatchDetails() {
             placeholder="Enter new username"
             value={editingUserName}
             onChange={(e) => setEditingUserName(e.target.value)}
-            className="w-full max-w-md mx-auto p-3 rounded- bg-gray-400 text-white focus:ring-2 focus:ring-green-400"
+            className="w-full max-w-md mx-auto p-3 rounded bg-gray-300 text-white focus:ring-2 focus:ring-green-400"
           />
-
+<div className="flex gap-4 mt-4">
           <button
             onClick={updateUsername}
-            className="mt-3 w-full max-w-md mx-auto bg-green-600 text-white font-bold p-2 rounded-full transition"
+            className=" bg-green-600 text-white font-bold p-2 rounded-full transition"
           >
             Update
           </button>
 
           <button
             onClick={() => setEditMode(false)}
-            className="mt-2 text-gray-800 text-sm"
+              className="bg-gray-600 text-white font-bold p-2 rounded-full transition"
           >
             Cancel
           </button>
+            </div>
             </div>
         </div>
       )}
