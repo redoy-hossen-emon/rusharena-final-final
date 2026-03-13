@@ -24,11 +24,7 @@ export async function POST(req) {
     const playerIndex = match.joinedPlayers.findIndex(
       (p) => p.authId === authId
     );
-    return NextResponse.json({
-      success: true,
-      message: "Username ",
-      data: match.joinedPlayers[playerIndex],
-    });
+   
     if (playerIndex === -1) {
       return response(false, 404, "Player not found in this match");
     }
