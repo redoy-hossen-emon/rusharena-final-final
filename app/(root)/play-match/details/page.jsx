@@ -218,7 +218,7 @@ console.log(value);
                     >
                       {player.name || "N/A"}
 
-                      {player.authId === userAuthId && (
+                      {player.authId &&(
                         <button
                           className="ml-3 text-xs text-gray-400 hover:text-gray-200 transition"
                           onClick={() => handleEditUsername(player)}
