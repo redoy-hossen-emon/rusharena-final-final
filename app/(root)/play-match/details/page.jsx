@@ -191,72 +191,68 @@ export default function MatchDetails() {
           </ul>
         </div>
       )}
-
+      {/* Match Rules for this specific match type */}
       <MatchRule matchType={match.matchType} />
+
       {/* Joined Players */}
       <div className="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-700">
         <h3 className="font-bold mb-4 text-xl text-center text-white">
           Joined Players
         </h3>
 
-        {Array.isArray(players) &&
-          !players.some((p) => p.authId === userAuthId) && (
-            <p className="text-center text-gray-400">
-              Please Join this match to see joined players.
-            </p>
-          )}
+        {!Array.isArray(players) || players.length === 0 ? (
+          <p className="text-center text-gray-400">No players joined yet.</p>
+        ) : !players.some((p) => p.authId === userAuthId) ? (
+          <p className="text-center text-gray-400">
+            Please Join this match to see joined players.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm md:text-base border border-gray-700 rounded-xl">
+              <thead>
+                <tr className="bg-gray-800 text-gray-300 uppercase text-xs md:text-sm">
+                  <th className="py-2 px-4 text-left">#</th>
+                  <th className="py-2 px-4 text-left">Player Name</th>
+                </tr>
+              </thead>
 
-        {Array.isArray(players) &&
-          players.some((p) => p.authId === userAuthId) &&
-          (players.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm md:text-base border border-gray-700 rounded-xl">
-                <thead>
-                  <tr className="bg-gray-800 text-gray-300 uppercase text-xs md:text-sm">
-                    <th className="py-2 px-4 text-left">#</th>
-                    <th className="py-2 px-4 text-left">Player Name</th>
-                  </tr>
-                </thead>
+              <tbody>
+                {players.map((player, index) => (
+                  <tr
+                    key={player._id || index}
+                    className="border-b border-gray-700 hover:bg-gray-800 transition"
+                  >
+                    <td className="py-2 px-4">{index + 1}</td>
 
-                <tbody>
-                  {players.map((player, index) => (
-                    <tr
-                      key={player._id || index}
-                      className="border-b border-gray-700 hover:bg-gray-800 transition"
+                    <td
+                      className={`py-2 px-4 font-medium ${
+                        player.authId === userAuthId
+                          ? "text-green-400"
+                          : "text-yellow-400"
+                      }`}
                     >
-                      <td className="py-2 px-4">{index + 1}</td>
+                      {player.name || "N/A"}
 
-                      <td
-                        className={`py-2 px-4 font-medium ${
-                          player.authId === userAuthId
-                            ? "text-green-400"
-                            : "text-yellow-400"
-                        }`}
-                      >
-                        {player.name || "N/A"}
-
-                        {player.authId === userAuthId && (
-                          <button
-                            className="ml-3 bg-gray-700 text-gray-200 hover:bg-gray-600 px-3 py-1 rounded-full text-xs"
-                            onClick={() => {
-                              setEditMode(true);
-                              setEditingUserName(player.name);
-                              setEditingPlayer(player);
-                              setUserId(player._id);
-                            }}
-                          >
-                            Edit
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-center text-gray-400">No players joined yet.</p>
-          ))}
+                      {player.authId === userAuthId && (
+                        <button
+                          className="ml-3 bg-gray-700 text-gray-200 hover:bg-gray-600 px-3 py-1 rounded-full text-xs"
+                          onClick={() => {
+                            setEditMode(true);
+                            setEditingUserName(player.name);
+                            setEditingPlayer(player);
+                            setUserId(player._id);
+                          }}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Edit Username UI */}
