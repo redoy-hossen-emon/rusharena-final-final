@@ -74,19 +74,14 @@ export default function MatchDetails() {
       });
 
       if (res.data?.success) {
-        const updatedPlayers = players.map((p) =>
-          p.authId === editingPlayer.authId
-            ? { ...p, name: editingUserName }
-            : p
-        );
-
-        setPlayers(updatedPlayers);
 
         showToast(true, "Username updated successfully");
 
         setEditMode(false);
         setEditingPlayer(null);
         setEditingUserName("");
+
+        window.location.reload();
       } else {
         showToast(false, "Failed to update username");
       }
