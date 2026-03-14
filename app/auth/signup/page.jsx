@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
+import { signIn, useSession } from "next-auth/react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,61 +19,89 @@ import { signupSchema } from "@/lib/zodSchema";
 import Logo from "@/public/images/logo.jpg";
 
 import { showToast } from "@/app/component/application/tostify";
-
 import ButtonLoading from "@/app/component/buttonLoading";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setloading] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const router = useRouter();
+  const { data: session } = useSession();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm({
     resolver: zodResolver(signupSchema),
   });
 
+  // 🔹 Remove spaces from username
+  const sanitizeUsername = (name) => {
+    if (!name) return "";
+    return name.replace(/\s+/g, "");
+  };
+
+  // 🔹 Autofill Google data
+  useEffect(() => {
+    if (session?.user) {
+      const cleanName = sanitizeUsername(session.user.name);
+
+      if (session.user.email) {
+        setValue("email", session.user.email);
+      }
+
+      if (cleanName) {
+        setValue("name", cleanName);
+      }
+    }
+  }, [session, setValue]);
+
   const onSubmit = async (data) => {
-    console.log(data);
-
     try {
-      setloading(true);
+      setLoading(true);
 
-      // Send signup request
-      const res = await axios.post(`/api/auth/signup`, data);
+      const payload = {
+        ...data,
+        name: sanitizeUsername(data.name),
+      };
+
+      const res = await axios.post("/api/auth/signup", payload);
       const signupResponse = res.data;
 
-      // Handle failure
-      if (!signupResponse.success) {
-        showToast("error", signupResponse.message || "Signup failed");
+      if (!signupResponse?.success) {
+        showToast("error", signupResponse?.message || "Signup failed");
         return;
       }
 
-      // Save token in Capacitor Storage (works in APK + web)
       const token = signupResponse.token;
+
       if (token) {
-        await Preferences.set({ key: "access_token", value: token });
+        await Preferences.set({
+          key: "access_token",
+          value: token,
+        });
       }
 
-      // Reset form and show success
       reset();
+
       showToast("success", signupResponse.message || "Signup successful");
 
-      // Redirect user
-
-      // Redirect user
-      return router.push("https://www.rusharena.club/");
+      router.push("https://www.rusharena.club/");
     } catch (error) {
       console.error("Signup error:", error);
+
       showToast(
         "error",
-        error.response?.data?.message || error.message || "Something went wrong"
+        error?.response?.data?.message ||
+          error?.message ||
+          "Something went wrong",
       );
     } finally {
-      setloading(false);
+      setLoading(false);
     }
   };
 
@@ -89,17 +118,39 @@ export default function SignupPage() {
               className="max-w-[150px] rounded-full"
             />
           </div>
+
           <CardTitle className="text-3xl font-bold">Create Account</CardTitle>
+
           <p className="text-sm text-muted-foreground">
             Fill in your details to create a new account
           </p>
         </CardHeader>
+
         <CardContent>
+          {/* Google Sign In */}
+          <button
+            type="button"
+            onClick={() => signIn("google")}
+            className="w-full border p-2 rounded-md flex items-center justify-center gap-2 mb-4 hover:bg-gray-100 transition"
+          >
+            Continue with Google
+          </button>
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Name */}
             <div className="space-y-1">
               <Label htmlFor="name">User Name</Label>
-              <Input id="name" placeholder="John Doe" {...register("name")} />
+
+              <Input
+                id="name"
+                placeholder="JohnDoe"
+                autoComplete="name"
+                {...register("name")}
+                onChange={(e) =>
+                  setValue("name", sanitizeUsername(e.target.value))
+                }
+              />
+
               {errors.name && (
                 <p className="text-red-500 text-sm">{errors.name.message}</p>
               )}
@@ -108,25 +159,33 @@ export default function SignupPage() {
             {/* Email */}
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
+
               <Input
+                readOnly
                 id="email"
-                type="text"
+                type="email"
+                autoComplete="email"
                 placeholder="example@gmail.com"
                 {...register("email")}
               />
+
               {errors.email && (
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
               )}
             </div>
+
             {/* Phone */}
             <div className="space-y-1">
               <Label htmlFor="phone">Phone</Label>
+
               <Input
                 id="phone"
                 type="text"
+                autoComplete="tel"
                 placeholder="01xxxxxxxxx"
                 {...register("phone")}
               />
+
               {errors.phone && (
                 <p className="text-red-500 text-sm">{errors.phone.message}</p>
               )}
@@ -135,19 +194,22 @@ export default function SignupPage() {
             {/* Password */}
             <div className="space-y-1">
               <Label htmlFor="password">Password</Label>
+
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="********"
+                  autoComplete="new-password"
                   {...register("password")}
                   className="pr-10"
                 />
+
                 <button
                   type="button"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label="toggle password"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -156,6 +218,7 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
+
               {errors.password && (
                 <p className="text-red-500 text-sm">
                   {errors.password.message}
@@ -166,21 +229,22 @@ export default function SignupPage() {
             {/* Confirm Password */}
             <div className="space-y-1">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
+
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="********"
+                  autoComplete="new-password"
                   {...register("confirmPassword")}
                   className="pr-10"
                 />
+
                 <button
                   type="button"
-                  aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
+                  aria-label="toggle confirm password"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -189,6 +253,7 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
+
               {errors.confirmPassword && (
                 <p className="text-red-500 text-sm">
                   {errors.confirmPassword.message}
@@ -197,9 +262,9 @@ export default function SignupPage() {
             </div>
 
             <ButtonLoading
-              type={"submit"}
-              text={"Sign up"}
-              className={"w-full"}
+              type="submit"
+              text="Sign up"
+              className="w-full"
               loading={loading}
             />
           </form>

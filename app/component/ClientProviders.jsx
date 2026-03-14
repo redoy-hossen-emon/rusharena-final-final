@@ -7,6 +7,7 @@ import InternetChecker from "./InternetChecker";
 import ProtectedRoute from "./protectedRoute";
 import BrowserOverlay from "./BrowserOverlay";
 import AppInit from "./pushsetup";
+import { SessionProvider } from "next-auth/react";
 
 export default function ClientProviders({ children }) {
   return (
@@ -16,7 +17,11 @@ export default function ClientProviders({ children }) {
 
       <InternetChecker>
         <BrowserOverlay>
-          <ProtectedRoute>{children}</ProtectedRoute>
+          <SessionProvider>
+            {/* <ProtectedRoute> */}
+            {children}
+            {/* </ProtectedRoute> */}
+          </SessionProvider>
         </BrowserOverlay>
       </InternetChecker>
 
